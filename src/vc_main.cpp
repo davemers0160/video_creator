@@ -241,7 +241,7 @@ int main(int argc, char** argv)
 
 
         //size_t lastindex = videofilename.find_last_of(".");
-        //video_save_file = videofilename.substr(0, lastindex) + "_convert.avi";
+        //video_save_file = input_folder + .avi";
 
         std::cout << std::endl << "Saving the following file:" << std::endl;
         std::cout << video_save_file << std::endl;
