@@ -20,6 +20,7 @@
 
 #include "file_parser.h"
 #include "get_directory_listing.h"
+#include "print_progress.h"
 
 // OpenCV includes
 #include <opencv2/core.hpp>
@@ -30,56 +31,28 @@
 #include <opencv2/videoio.hpp>
 
 //
-//// ----------------------------------------------------------------------------------------
-//// https://stackoverflow.com/questions/612097/how-can-i-get-the-list-of-files-in-a-directory-using-c-or-c
-//std::vector<std::string> get_directory_listing(std::string folder)
+// ----------------------------------------------------------------------------------------
+
+//void print_progress(float progress)
 //{
-//    std::vector<std::string> file_names;
-//    std::string search_path = folder + "*.*";
+//    uint32_t bar_width = 70;
 //
-//    WIN32_FIND_DATA fd;
-//    void* hFind = ::FindFirstFile(search_path.c_str(), &fd);
-//
-//#if defined(_WIN32) | defined(__WIN32__) | defined(__WIN32) | defined(_WIN64) | defined(__WIN64)
-//    if (hFind != INVALID_HANDLE_VALUE)
+//    if (progress == 0.0)
 //    {
-//        do 
-//        {
-//            // read all (real) files in current folder
-//            // , delete '!' read other 2 default folder . and ..
-//            if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-//                file_names.push_back(fd.cFileName);
-//            }
-//        } while (::FindNextFile(hFind, &fd));
-//        ::FindClose(hFind);
+//        std::cout << "[" << std::string(bar_width, ' ') << "] " << std::fixed << std::setprecision(2) << (progress * 100.0) << "%\r";
+//        std::cout.flush();
+//        return;
 //    }
-//#else
-//    DIR* dir;
-//    class dirent* ent;
-//    class stat st;
 //
-//    dir = opendir(directory.c_str());
-//    while ((ent = readdir(dir)) != NULL) {
-//        const string file_name = ent->d_name;
-//        const string full_file_name = directory + "/" + file_name;
+//    if (progress <= 1.0)
+//    {
+//        
+//        uint32_t bar_count = (uint32_t)(bar_width* progress);
 //
-//        if (file_name[0] == '.')
-//            continue;
-//
-//        if (stat(full_file_name.c_str(), &st) == -1)
-//            continue;
-//
-//        const bool is_directory = (st.st_mode & S_IFDIR) != 0;
-//
-//        if (is_directory)
-//            continue;
-//
-//        file_names.push_back(file_name); // returns just filename
+//        std::cout << "[" << std::string(bar_count, '=') << std::string(bar_width-bar_count, ' ') << "] " << std::fixed << std::setprecision(2) << (progress * 100.0) << "%\r";
+//        std::cout.flush();
 //    }
-//    closedir(dir);
-//#endif
 //
-//    return file_names;
 //}
 
 // ----------------------------------------------------------------------------------------
@@ -108,7 +81,7 @@ int main(int argc, char** argv)
 	cv::Mat input_image;
     //int frameWidth, frameHeight;
     uint32_t img_width, img_height;
-    uint64_t frame_count;
+    //uint64_t frame_count;
     int32_t codec;
     double frame_rate;
     std::string codec_str;
@@ -129,7 +102,7 @@ int main(int argc, char** argv)
         "{help h ?  | | Help message }"
         "{codec     | MJPG | Video save codec }"
         //"{codec     | FMP4 | Video save codec }"
-        "{fps       | 30.0 | Frame rate }"
+        "{fps       | 10.0 | Frame rate }"
         "{filter    | .png | Image filter }"
         //"{rx_address  | 10.127.1.101 | IP Address for the lidar to send data to }"
         //"{os1_address | 10.127.1.175 | IP address for the lidar }"
@@ -211,7 +184,7 @@ int main(int argc, char** argv)
 
         if (file_list.size() > 0)
         {
-            std:cout << "Found: " << file_list.size() << " images." << std::endl;
+            std::cout << "Found: " << file_list.size() << " images." << std::endl;
 
             input_image = cv::imread((input_folder + file_list[0]), cv::IMREAD_ANYCOLOR);
             img_width = input_image.cols;
@@ -224,13 +197,13 @@ int main(int argc, char** argv)
         }
 
         std::cout << std::endl << "Saving the following file:" << std::endl;
-        std::cout << video_save_file << std::endl;   
+        std::cout << video_save_file << std::endl << std::endl;
 
         output_video.open(video_save_file, codec, frame_rate, cv::Size(img_width, img_height), true);
         
         std::cout << "FPS:   " << frame_rate << std::endl;
         std::cout << "CODEC: " << codec_str << std::endl;
-        std::cout << "Size:  " << img_width << " x " << img_height << std::endl;
+        std::cout << "Size:  " << img_width << " x " << img_height << std::endl << std::endl;;
 
         for (idx = 0; idx < file_list.size(); ++idx)
         {
@@ -243,11 +216,12 @@ int main(int argc, char** argv)
                 continue;
             }
             output_video.write(input_image);
+            print_progress(idx / (float)(file_list.size() - 1));
         }
 
         output_video.release();
 
-        std::cout << std::endl << "Processing complete!" << std::endl;
+        std::cout << std::endl << std::endl << "Processing complete!" << std::endl;
 
     }
     catch (std::exception e)
