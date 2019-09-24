@@ -77,6 +77,13 @@ message("--------------------------------------------------------")
 message(" ")
 
 
+
+if(WIN32)
+    add_compile_options(/arch:AVX)
+else()
+    add_compile_options(-mavx)
+endif()
+
 include_directories(${project_includes})
 add_executable(${exe_name} ${SOURCES})
 target_link_libraries(${exe_name} ${OpenCV_LIBS})
@@ -89,7 +96,8 @@ if(WIN32)
         target_compile_options(${exe_name} PRIVATE "/MP")
         set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${exe_name})
     endif()
-
+else()
+    
 endif()
 
 message(" ")

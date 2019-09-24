@@ -117,6 +117,8 @@ int main(int argc, char** argv)
     std::string save_path;
     std::string input_folder;
     std::vector<std::string> file_list;
+    
+    std::vector<std::string> filter = {".png"};
 
     //	unsigned int img_width = 0;
 //	unsigned int img_height = 0;
@@ -125,7 +127,8 @@ int main(int argc, char** argv)
 
     const std::string params =
         "{help h ?  | | Help message }"
-        "{codec     | FMP4 | Video save codec }"
+        "{codec     | MJPG | Video save codec }"
+        //"{codec     | FMP4 | Video save codec }"
         "{fps       | 30.0 | Frame rate }"
         //"{rx_address  | 10.127.1.101 | IP Address for the lidar to send data to }"
         //"{os1_address | 10.127.1.175 | IP address for the lidar }"
@@ -198,9 +201,9 @@ int main(int argc, char** argv)
         std::cout << "Processing the following folder: ";
         std::cout << input_folder << std::endl << std::endl; 
         
-        file_list = get_directory_listing(input_folder);
+        file_list = get_directory_listing(input_folder, filter);
 
-        codec = cv::VideoWriter::fourcc((char)codec_str[0], (char)codec_str[1], (char)codec_str[2], (char)codec_str[3]);
+
 
 
 
@@ -242,9 +245,12 @@ int main(int argc, char** argv)
         std::cout << "FPS : " << frame_rate << std::endl;
         std::cout << "CODEC: " << codec_str << std::endl;
 
-
+        codec = cv::VideoWriter::fourcc((char)codec_str[0], (char)codec_str[1], (char)codec_str[2], (char)codec_str[3]);
+        
         //size_t lastindex = videofilename.find_last_of(".");
-        //video_save_file = input_folder + .avi";
+
+        
+        video_save_file = input_folder + "video_file.avi";
 
         std::cout << std::endl << "Saving the following file:" << std::endl;
         std::cout << video_save_file << std::endl;
@@ -253,7 +259,10 @@ int main(int argc, char** argv)
         img_width = input_image.cols;
         img_height = input_image.rows;
 
+        //codec = -1;
         output_video.open(video_save_file, codec, frame_rate, cv::Size(img_width, img_height), true);
+        
+        
 
         cv::Mat tempCrop;
         for (idx = 0; idx < file_list.size(); ++idx)
