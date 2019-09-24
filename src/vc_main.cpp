@@ -118,7 +118,7 @@ int main(int argc, char** argv)
     std::string input_folder;
     std::vector<std::string> file_list;
     
-    std::vector<std::string> filter = {".png"};
+    std::vector<std::string> filter;
 
     //	unsigned int img_width = 0;
 //	unsigned int img_height = 0;
@@ -130,6 +130,7 @@ int main(int argc, char** argv)
         "{codec     | MJPG | Video save codec }"
         //"{codec     | FMP4 | Video save codec }"
         "{fps       | 30.0 | Frame rate }"
+        "{filter    | .png | Image filter }"
         //"{rx_address  | 10.127.1.101 | IP Address for the lidar to send data to }"
         //"{os1_address | 10.127.1.175 | IP address for the lidar }"
         //"{cfg_port    | 7501 | TCP/IP Port for lidar configuration }"
@@ -193,8 +194,8 @@ int main(int argc, char** argv)
 
     frame_rate = parser.get<double>("fps");
     codec_str = parser.get<std::string>("codec");
-    
-    //CV_FOURCC('F', 'M', 'P', '4');
+    filter.clear();
+    filter.push_back(parser.get<std::string>("filter"));
 
     try {
 
@@ -203,97 +204,59 @@ int main(int argc, char** argv)
         
         file_list = get_directory_listing(input_folder, filter);
 
-
-
-
-
-        //crop.width = img_width;
-        //crop.height = img_height;
-
-
-
-        //video_in.open(videofilename);
-
-        //if (video_in.isOpened() == true)
-        //{
-        //    img_width = (uint32_t)video_in.get(cv::CV_CAP_PROP_FRAME_WIDTH); //get the width of frames of the video
-        //    img_height = (uint32_t)video_in.get(CV_CAP_PROP_FRAME_HEIGHT); //get the height of frames of the video
-        //    fps = (double)video_in.get(CV_CAP_PROP_FPS);
-        //    frameCount = (int)video_in.get(CV_CAP_PROP_FRAME_COUNT);
-        //    codec = static_cast<int>(video_in.get(CV_CAP_PROP_FOURCC));     // Get Codec Type- Int form
-
-        //    char cod[] = { (char)(codec & 0XFF), (char)((codec & 0XFF00) >> 8), (char)((codec & 0XFF0000) >> 16), (char)((codec & 0XFF000000) >> 24), 0 };
-
-        //    //codec_str = string(cod);
-
-
-        //    crop.x = (frameWidth >> 1) - (img_width >> 1);
-        //    crop.y = (frameHeight >> 1) - (img_height >> 1);
-
-
-
-        //}
-        //else
-        //{
-        //    cout << endl << "Error opening file!" << endl;
-        //    return 1;
-        //}
-
-        //std::cout << "Video file was opened successfully!" << std::endl;
-        //std::cout << "Frame size : " << frameWidth << " x " << frameHeight << std::endl;
-        //std::cout << "Frame Count : " << frameCount << std::endl;
-        std::cout << "FPS : " << frame_rate << std::endl;
-        std::cout << "CODEC: " << codec_str << std::endl;
-
         codec = cv::VideoWriter::fourcc((char)codec_str[0], (char)codec_str[1], (char)codec_str[2], (char)codec_str[3]);
-        
-        //size_t lastindex = videofilename.find_last_of(".");
-
-        
+               
         video_save_file = input_folder + "video_file.avi";
 
-        std::cout << std::endl << "Saving the following file:" << std::endl;
-        std::cout << video_save_file << std::endl;
 
-        input_image = cv::imread((input_folder + file_list[0]), cv::IMREAD_ANYCOLOR);
-        img_width = input_image.cols;
-        img_height = input_image.rows;
-
-        //codec = -1;
-        output_video.open(video_save_file, codec, frame_rate, cv::Size(img_width, img_height), true);
-        
-        
-
-        cv::Mat tempCrop;
-        for (idx = 0; idx < file_list.size(); ++idx)
+        if (file_list.size() > 0)
         {
+            std:cout << "Found: " << file_list.size() << " images." << std::endl;
 
-            input_image = cv::imread((input_folder + file_list[idx]), cv::IMREAD_ANYCOLOR);
+            input_image = cv::imread((input_folder + file_list[0]), cv::IMREAD_ANYCOLOR);
+            img_width = input_image.cols;
+            img_height = input_image.rows;
 
-
-
-            //video_in.read(videoframe);
-
-            //videoframe(crop).copyTo(tempCrop);
-
-            //output_video.write(input_image);
+        }
+        else
+        {
+            return 0;
         }
 
-        std::cout << std::endl << "Processing complete!" << std::endl;
+        std::cout << std::endl << "Saving the following file:" << std::endl;
+        std::cout << video_save_file << std::endl;   
+
+        output_video.open(video_save_file, codec, frame_rate, cv::Size(img_width, img_height), true);
+        
+        std::cout << "FPS:   " << frame_rate << std::endl;
+        std::cout << "CODEC: " << codec_str << std::endl;
+        std::cout << "Size:  " << img_width << " x " << img_height << std::endl;
+
+        for (idx = 0; idx < file_list.size(); ++idx)
+        {
+            input_image = cv::imread((input_folder + file_list[idx]), cv::IMREAD_ANYCOLOR);
+
+            if ((input_image.rows != img_height) || (input_image.cols != img_width))
+            {
+                std::cout << "Current image size does not match the initial video size:" << std::endl;
+                std::cout << file_list[idx] << ": " << input_image.cols << " x " << input_image.rows << std::endl;
+                continue;
+            }
+            output_video.write(input_image);
+        }
 
         output_video.release();
 
-        // leave in for debugging purposes
-        //cout << "Press Enter to continue..." << endl;
-        //cin.ignore();
+        std::cout << std::endl << "Processing complete!" << std::endl;
 
     }
     catch (std::exception e)
     {
-        std::cout << e.what() << std::endl;
-
-        
+        std::cout << e.what() << std::endl;       
     }
+
+    std::cout << "Press Enter to continue..." << std::endl;
+    std::cin.ignore();
 
 	return 1;
 
