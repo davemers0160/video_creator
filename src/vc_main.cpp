@@ -19,6 +19,7 @@
 //#include <fstream>
 
 #include "file_parser.h"
+#include "file_ops.h"
 #include "get_directory_listing.h"
 #include "print_progress.h"
 
@@ -179,7 +180,7 @@ int main(int argc, char** argv)
 
         codec = cv::VideoWriter::fourcc((char)codec_str[0], (char)codec_str[1], (char)codec_str[2], (char)codec_str[3]);
                
-        video_save_file = input_folder + "video_file.avi";
+        video_save_file = input_folder + "video_file.mp4";
 
 
         if (file_list.size() > 0)

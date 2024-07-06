@@ -37,7 +37,7 @@ elseif(${PLATFORM} STREQUAL "HPC")
 elseif(${PLATFORM} STREQUAL "SL02319")
     set(COMMON_ROOT "/mnt/data/Common")
 else()
-    set(COMMON_ROOT "D:/Common")
+    set(COMMON_ROOT "D:/Projects/Common")
 endif()
 
 include(${COMMON_ROOT}/cmake_utils/use_cpp_11.cmake)
